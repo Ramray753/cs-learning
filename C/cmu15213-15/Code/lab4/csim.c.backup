@@ -1,0 +1,177 @@
+#include "cachelab.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <getopt.h>
+#define BUFFER_SIZE 64
+
+int hit_count = 0, miss_count = 0, eviction_count = 0;
+int s = 0, E = 0, b = 0, v = 0;
+int B = 0, S = 0, shift = 0;
+long mask = 0;
+char *t = NULL;
+
+typedef struct _node{
+    struct _node *next_list;
+    struct _node *pre_list;
+    struct _node *next_table;
+    struct _node *pre_table;
+    long line;
+} node;
+
+typedef struct{
+    node *head;
+    node *table;
+    int size;
+} set_lru;
+
+typedef set_lru** vcache;
+
+// 函数原型
+int initOptions(int argc, char **argv);
+void printHelpInfo(void);
+vcache initCache(void); 
+void load(vcache cache, long addr);
+void write(vcache cache, long addr);
+void freeCache(vcache cache); 
+void freeSet(set_lru* set); 
+
+int main(int argc, char **argv){
+    // 解析命令行参数参数
+    if (!initOptions(argc, argv)){
+        printHelpInfo();
+        return 1;
+    } 
+
+    // 初始化文件
+    FILE *fp = fopen(t, "r");
+    if (!fp){
+        printHelpInfo();
+        return 1;
+    }
+
+    // 初始化虚拟缓存
+    vcache cache = initCache();
+
+    // 解析文件
+    char *buffer = malloc(BUFFER_SIZE);
+    char type;
+    long addr;
+    while(fgets(buffer, BUFFER_SIZE, fp) != NULL) {
+        type = strtok(buffer, " ")[0];
+        if ('I' != type){
+            addr = strtol(strtok(NULL, ","), NULL, 16);
+            switch(type){
+                case 'L':
+                    load(cache, addr);
+                    break;
+                case 'S':
+                    write(cache, addr);
+                    break;
+                case 'M':
+                    load(cache, addr);
+                    write(cache, addr);
+                    break;
+            }
+            printf("%c, %lx\n", type, addr);
+        }
+    }
+
+    // 关闭文件
+    fclose(fp);
+
+    // 释放内存
+    freeCache(cache);
+    free(buffer);
+
+    // 展示结果
+        
+}
+
+int initOptions(int argc, char **argv){
+    int opt;
+    if (argc == 1){
+        return 0;
+    }
+    while ((opt = getopt(argc, argv, ":hvs:E:b:t:")) != -1){
+        switch (opt){
+            case 'h':
+            case '?':
+            case ':':
+                return 0;
+                break;
+            case 'v':
+                v = 1;
+                break;
+            case 's':
+                s = atoi(optarg);
+                S = 1 << s;
+                break;
+            case 'E':
+                E = atoi(optarg);
+                break;
+            case 'b':
+                b = atoi(optarg);
+                B = 1 << b;
+                break;
+            case 't':
+                t = optarg;
+                break;  
+        }
+    }
+    if (!s || !E || !b || !t){
+        return 0;
+    }
+    shift = s + b;
+    mask = 1L << shift;
+    return 1;
+}
+
+void printHelpInfo(void){
+    printf("Usage: ./csim-ref [-hv] -s <s> -E <E> -b <b> -t <tracefile>\n\n");
+    printf("\t-h: Optional help flag that prints usage info\n\n");
+    printf("\t-v: Optional verbose flag that displays trace info\n\n");
+    printf("\t-s <s>: Number of set index bits\n\n");
+    printf("\t-E <E>: Associativity\n\n");
+    printf("\t-b <b>: Number of block bits\n\n");
+    printf("\t-t <tracefile>: Name of the valgrind trace to replay\n");
+}
+
+vcache initCache(void){
+    vcache out = calloc(sizeof(set_lru*), S);
+    if (!out){
+        return NULL;
+    }
+    for (int i = 0; i < S; i++){
+        out[i] = malloc(sizeof(set_lru));
+        if (!out[i]){
+            for (int j = 0; j < i; j++){
+                free(out[j]);
+            }
+            return NULL;
+        }
+        out[i] -> size = 0;
+    }
+    return out;
+}
+
+void load(vcache cache, long addr){
+    return;
+}
+void write(vcache cache, long addr){
+    return;
+}
+
+
+void freeCache(vcache cache){
+    for (int i = 0; i < S; i++){
+        freeSet(cache[i]);
+        free(cache[i]);
+    }
+    free(cache);
+}
+
+void freeSet(set_lru *set){
+    // TODO
+    return;
+}

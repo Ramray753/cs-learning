@@ -1,0 +1,144 @@
+Compiling with the CSAPP library
+
+csapp.h: https://csapp.cs.cmu.edu/3e/ics3/code/include/csapp.h
+csapp.c: http://csapp.cs.cmu.edu/3e/ics3/code/src/csapp.c
+
+The csapp collection of useful auxilliary functions are declared in the file csapp.h and defined in the csapp.c file.
+
+These functions include the utility functions for Unix file i/o, sockets, signals, threads and semaphores.
+
+The threads (and semphores) functions require linking with libraries other than the standard C library.
+
+The threads functions require the pthread library.
+
+On some systems (not ctilinux1), the semaphores also require the rt (run time) library.
+
+Example 1
+Goal: Compile a program sample.c that includes "csapp.h"
+
+Assumptions: csapp.h and csapp.c are in the same directory as sample.c
+
+      gcc -O2 -lpthread -o sample sample.c csapp.c
+    
+On systems that also need to explicitly use the run time library, the command would just add another -l option:
+
+      gcc -O2 -lpthread -lrt -o sample sample.c csapp.c
+    
+Example 2
+Goal: Same as Example 1, but avoid recompiling csapp.c every time.
+
+In Example 1, the file csapp.c is recompiled every time you compile sample.c or any program that uses the csapp lib even though csapp.c doesn't change.
+
+So you could compile (but not link) csapp.c just once to get an object file csapp.o:
+
+      gcc -O2 -c csapp.c
+    
+Then to compile sample.c
+
+      gcc -O2 -lpthread -o sample sample.c csapp.o
+    
+Example 3
+Goal: Same as Example 2, but avoid having to type so much.
+
+To reduce the amount of typing required, we could create a make file. The make command looks for files named makefile or Makefile.
+
+We want the make command to read the makefile and automatically create the executable file sample from the files it depends on: sample.c and csapp.o.
+
+But csapp.o depends on csapp.c.
+
+So the makefile can have 2 targets: sample and csapp.o.
+
+For each target we need to provide the command(s) to create the target. Each command line should begin with a tab!
+
+      sample: sample.c csapp.o
+             gcc -O2 -lpthread -o sample sample.c csapp.o
+
+      csapp.o: csapp.c
+             gcc -O2 -c csapp.c
+    
+To build sample all we need to type is:
+
+      make
+    
+Example 4
+Goal: Compile any one of a fixed set of files that uses the csapp library without having to type too much.
+
+Now suppose we have 3 separate programs: sample1.c, sample2.c, and sample3.c that use the csapp library.
+
+We could write a makefile that has a target and rule for each one:
+
+      sample1: sample1.c csapp.o
+             gcc -O2 -lpthread -o sample1 sample1.c csapp.o
+
+
+      sample2: sample2.c csapp.o
+             gcc -O2 -lpthread -o sample2 sample2.c csapp.o
+
+
+      sample3: sample3.c csapp.o
+             gcc -O2 -lpthread -o sample3 sample3.c csapp.o
+
+      csapp.o: csapp.c
+             gcc -O2 -c csapp.c
+    
+To compile, say sample2, just type:
+
+      make sample2
+    
+Example 5
+Goal: Compile any file that uses the csapp library without having to modify the makefile.
+
+Instead of having to write an entry for each of the 3 programs in Example 4, we can also write a "rule" in the makefile that handles all 3 cases (and even an named xxx.c that uses csapp if it is added later):
+
+      .c:
+            gcc -O2 -lpthread -o $* $< csapp.o
+
+      csapp.o: csapp.c
+            gcc -O2 -c csapp.c
+    
+With this makefile, we can now compile and link any one of the .c files that uses csapp. For example to compile and link sample2.c:
+
+      make sample2
+    
+If csapp.c has not yet been compiled, this make command will automatically execute two commands:
+
+      gcc -O2 -c csapp.c
+      gcc -O2 -lpthread -o sample2 sample2.c csapp.o
+    
+Now sample2 can be executed and csapp.c has been also been compiled to produce csapp.o for further use.
+
+So if we now want to compile sample3, we again just type
+
+      make sample3
+    
+Since csapp.o exists and is "up to date", only one command will be executed (automatically):
+
+      gcc -O2 -lpthread -o sample3 sample3.c csapp.o
+    
+Example 6
+Goal: Same as Example 5, but also using only one copy of csapp.h and csapp.c that are located in one fixed separate directory.
+
+All the preceding examples assume the csapp.h and csapp.c files are in the same directory as the file that will use them.
+
+There is no reason to keep making copies of these files if they are not changing.
+
+So suppose these files are in the subdirectory, say cslib, of your login directory: ~/cslib. That is, suppose the paths to the two files csapp.h and csapp.c are:
+
+    ~/cslib/csapp.h
+    ~/cslib/csapp.c
+    
+In some other directory, say ~/examples/threads in your account you have files sample1.c, sample2.c, etc. that will use the csapp library.
+
+There is no need to copy the csapp.h or csapp.c files to the ~/examples/threads directory.
+
+Instead, create a make file (named makefile) in the ~/examples/threads directory:
+
+      .c:
+            cd ~/cslib; make csapp.o
+            gcc -O2 -I ~/cslib -lpthread -o $* $<
+    
+This makefile has 2 commands to make the target.
+
+The first command (temporarily) changes to the cslib directory and makes the csapp.o. Note that if csapp.o already exists, it will not be recompiled.
+
+The second command (gcc ...) has an -I ~/cslib option. This tells the compiler to look in the ~/cslib directory for include files (csapp.h). It will also look there for any missing object files (csapp.o).

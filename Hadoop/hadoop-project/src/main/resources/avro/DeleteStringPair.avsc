@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "name": "DeleteStringPair",
+  "namespace": "applications.avro",
+  "doc": "A pair of strings.",
+  "fields": [
+    {"name": "right", "type": "string"}
+  ]
+}

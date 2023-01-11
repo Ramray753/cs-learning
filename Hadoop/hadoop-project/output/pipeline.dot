@@ -1,0 +1,36 @@
+digraph G {
+  "Text(/var/folders/f0/b3w5zncx7z37f48q_c_g9g_80000gn/T/junit4095725408271902965/set2.txt)" [label="Text(/var/folders/f0/b3w5zncx7z37f48q_c_g9g_80000gn/T/junit4095725408271902965/set2.txt) 0 Mb" shape=folder];
+  "Text(output/count)" [label="Text(output/count)" shape=folder];
+  "SeqFile(output/checkpoint)" [label="SeqFile(output/checkpoint)" shape=folder];
+  subgraph "cluster-job2" {
+    label="Crunch Job 2";
+    subgraph "cluster-job2-reduce" {
+      label = Reduce; color = red;
+      "GBK@70323523@1250442005" [label="GBK 0 Mb (1 Automatic reducers)" shape=box];
+      "count values@1014982340@1250442005" [label="count values 0 Mb" shape=box];
+    }
+  }
+  subgraph "cluster-job1" {
+    label="Crunch Job 1";
+    subgraph "cluster-job1-map" {
+      label = Map; color = blue;
+      "lower@227755469@1333810223" [label="lower 0 Mb" shape=box];
+      "Aggregate.count@1116094714@1333810223" [label="Aggregate.count 0 Mb" shape=box];
+    }
+    subgraph "cluster-job1-reduce" {
+      label = Reduce; color = red;
+      "GBK@1276709283@1333810223" [label="GBK 0 Mb (1 Manual reducers)" shape=box];
+      "inverse@1560940633@1333810223" [label="inverse 0 Mb" shape=box];
+      "combine@1259174396@1333810223" [label="combine 0 Mb" shape=box];
+    }
+  }
+  "SeqFile(output/checkpoint)" -> "GBK@70323523@1250442005";
+  "GBK@1276709283@1333810223" -> "combine@1259174396@1333810223";
+  "Text(/var/folders/f0/b3w5zncx7z37f48q_c_g9g_80000gn/T/junit4095725408271902965/set2.txt)" -> "lower@227755469@1333810223";
+  "inverse@1560940633@1333810223" -> "SeqFile(output/checkpoint)";
+  "lower@227755469@1333810223" -> "Aggregate.count@1116094714@1333810223";
+  "GBK@70323523@1250442005" -> "count values@1014982340@1250442005";
+  "count values@1014982340@1250442005" -> "Text(output/count)";
+  "Aggregate.count@1116094714@1333810223" -> "GBK@1276709283@1333810223";
+  "combine@1259174396@1333810223" -> "inverse@1560940633@1333810223";
+}

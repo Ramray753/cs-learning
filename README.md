@@ -7,6 +7,6 @@ Code written during the course of learning CS.
 * `C`
 
   * `cmu15213-15`：CMU15213-15课程课件（书、课件和代码）（[GitBook笔记](https://xiangtian.gitbook.io/cmu-15213-bi-ji/)）
-  * `cs50`：CS50课程课件（课件和代码）（[GitBook笔记](https://xiangtian.gitbook.io/c-yu-yan-xue-xi-bi-ji/v/harvard-cs50-ji-suan-ji-ke-xue-gai-lun/）
+  * `cs50`：CS50课程课件（课件和代码）（[GitBook笔记](https://xiangtian.gitbook.io/c-yu-yan-xue-xi-bi-ji/v/harvard-cs50-ji-suan-ji-ke-xue-gai-lun/)）
   
   
